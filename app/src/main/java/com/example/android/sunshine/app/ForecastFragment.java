@@ -30,10 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 public class ForecastFragment extends Fragment {
 
@@ -72,7 +70,6 @@ public class ForecastFragment extends Fragment {
                         R.layout.list_item_forecast,
                         R.id.list_item_forecast_textview,
                         new ArrayList<String>());
-        Log.v("Dupa", "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -91,22 +88,31 @@ public class ForecastFragment extends Fragment {
     }
 
     private void updateWeather() {
-        FetchWeatherTast fetchWeatherTast = new FetchWeatherTast();
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-        fetchWeatherTast.execute(location);
+        fetchWeatherTask.execute(location);
     }
 
-//    @Override
-//    public void onStart() {
-//        Log.v("Dupa", "onStart");
-//        super.onStart();
-//        updateWeather();
-//    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
 
-    class FetchWeatherTast extends AsyncTask<String, Void, String[]> {
+    class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
-        private String formatHighLows(double high, double low) {
+        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+
+        private String formatHighLows(double high, double low, String unitType) {
+
+            if (unitType.equals(getString(R.string.pref_units_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            } else if (!unitType.equals(getString(R.string.pref_unit_metric))) {
+                Log.d(LOG_TAG, "Unit type not found: " + unitType);
+            }
+
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
             String highLowStr = roundedHigh + "/" + roundedLow;
@@ -125,6 +131,13 @@ public class ForecastFragment extends Fragment {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             String[] resultStrs = new String[numDays];
+
+            SharedPreferences sharedPrefs =
+                    PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = sharedPrefs.getString(
+                    getString(R.string.pref_unit_key),
+                    getString(R.string.pref_unit_metric));
+
             for (int i = 0; i < weatherArray.length(); i++) {
                 String day;
                 String description;
@@ -145,12 +158,12 @@ public class ForecastFragment extends Fragment {
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
 
-                highAndLow = formatHighLows(high, low);
+                highAndLow = formatHighLows(high, low, unitType);
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
 
             for (String s : resultStrs) {
-                Log.v("MILTAS", "Forecast entry: " + s);
+                Log.v(LOG_TAG, "Forecast entry: " + s);
             }
             return resultStrs;
 
