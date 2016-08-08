@@ -51,9 +51,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         return format.format(date).toString();
     }
 
-    /**
-     * Prepare the weather high/lows for presentation.
-     */
     private String formatHighLows(double high, double low) {
         // Data is fetched in Celsius by default.
         // If user prefers to see in Fahrenheit, convert the values here.
@@ -81,15 +78,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         return highLowStr;
     }
 
-    /**
-     * Helper method to handle insertion of a new location in the weather database.
-     *
-     * @param locationSetting The location string used to request updates from the server.
-     * @param cityName A human-readable city name, e.g "Mountain View"
-     * @param lat the latitude of the city
-     * @param lon the longitude of the city
-     * @return the row ID of the added location.
-     */
     long addLocation(String locationSetting, String cityName, double lat, double lon) {
         // Students: First, check if the location with this city name exists in the db
         // If it exists, return the current ID

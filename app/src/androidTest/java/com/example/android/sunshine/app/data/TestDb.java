@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import java.util.HashSet;
 
@@ -33,8 +34,10 @@ public class TestDb extends AndroidTestCase {
         tableNameHashSet.add(WeatherContract.WeatherEntry.TABLE_NAME);
 
         mContext.deleteDatabase(WeatherDbHelper.DATABASE_NAME);
-        SQLiteDatabase db = new WeatherDbHelper(
-                this.mContext).getWritableDatabase();
+
+        WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         assertEquals(true, db.isOpen());
 
         // have we created the tables we want?
@@ -76,12 +79,12 @@ public class TestDb extends AndroidTestCase {
 
         assertTrue("Error: The database doesn't contain all of the required location entry columns",
                 locationColumnHashSet.isEmpty());
+
         db.close();
     }
 
 
     public void testLocationTable() {
-
         insertLocation();
     }
 
@@ -131,6 +134,7 @@ public class TestDb extends AndroidTestCase {
 
         long locationRowId;
         locationRowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
+        Log.v("DUPA1234", testValues + "");
         assertTrue(locationRowId != -1);
 
         Cursor cursor = db.query(
